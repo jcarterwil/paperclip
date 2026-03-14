@@ -21,5 +21,7 @@ services:
         value: private
       - key: BETTER_AUTH_SECRET
         generateValue: true
+      - key: PAPERCLIP_MIGRATION_PROMPT
+        value: "never"
       - key: DATABASE_URL
         value: "postgresql://hayek:rniQAsqR9hGp3h6C5GdyWhePWxj0Qud4@dpg-d5a7taruibrs73bmqrfg-a/hayek_19jf"
