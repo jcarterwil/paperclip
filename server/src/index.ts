@@ -1,4 +1,5 @@
 /// <reference path="./types/express.d.ts" />
+import { createHash, randomBytes } from "node:crypto";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
@@ -6,7 +7,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { pathToFileURL } from "node:url";
 import type { Request as ExpressRequest, RequestHandler } from "express";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq, gt, isNull } from "drizzle-orm";
 import {
   createDb,
   ensurePostgresDatabase,
@@ -19,6 +20,7 @@ import {
   companies,
   companyMemberships,
   instanceUserRoles,
+  invites,
 } from "@paperclipai/db";
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
@@ -652,6 +654,62 @@ export async function startServer(): Promise<StartedServer> {
       resolveListen();
     });
   });
+
+  // Auto-bootstrap CEO invite on first startup when no admin exists
+  if (
+    config.deploymentMode === "authenticated" &&
+    process.env.PAPERCLIP_AUTO_BOOTSTRAP_CEO === "true"
+  ) {
+    try {
+      const adminCount = await (db as any)
+        .select({ count: count() })
+        .from(instanceUserRoles)
+        .where(eq(instanceUserRoles.role, "instance_admin"))
+        .then((rows: { count: number }[]) => Number(rows[0]?.count ?? 0));
+
+      if (adminCount === 0) {
+        const now = new Date();
+        const activeInviteCount = await (db as any)
+          .select({ count: count() })
+          .from(invites)
+          .where(
+            and(
+              eq(invites.inviteType, "bootstrap_ceo"),
+              isNull(invites.revokedAt),
+              isNull(invites.acceptedAt),
+              gt(invites.expiresAt, now),
+            ),
+          )
+          .then((rows: { count: number }[]) => Number(rows[0]?.count ?? 0));
+
+        if (activeInviteCount === 0) {
+          const token = `pcp_bootstrap_${randomBytes(24).toString("hex")}`;
+          const tokenHash = createHash("sha256").update(token).digest("hex");
+          const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+          await (db as any)
+            .insert(invites)
+            .values({
+              inviteType: "bootstrap_ceo",
+              tokenHash,
+              allowedJoinTypes: "human",
+              expiresAt,
+              invitedByUserId: "system",
+            });
+
+          const baseUrl = (
+            process.env.PAPERCLIP_PUBLIC_URL ??
+            process.env.BETTER_AUTH_URL ??
+            `http://localhost:${listenPort}`
+          ).replace(/\/+$/, "");
+          const inviteUrl = `${baseUrl}/invite/${token}`;
+          logger.info(`Auto-bootstrap CEO invite created: ${inviteUrl}`);
+          logger.info(`Invite expires: ${expiresAt.toISOString()}`);
+        }
+      }
+    } catch (err) {
+      logger.warn({ err }, "Auto-bootstrap CEO invite failed (non-fatal)");
+    }
+  }
   
   if (embeddedPostgres && embeddedPostgresStartedByThisProcess) {
     const shutdown = async (signal: "SIGINT" | "SIGTERM") => {
