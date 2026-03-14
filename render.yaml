@@ -19,6 +19,8 @@ services:
         value: authenticated
       - key: PAPERCLIP_DEPLOYMENT_EXPOSURE
         value: private
+      - key: PAPERCLIP_PUBLIC_URL
+        value: "https://paperclip-nuqq.onrender.com"
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: PAPERCLIP_MIGRATION_AUTO_APPLY
