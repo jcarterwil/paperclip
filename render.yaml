@@ -22,12 +22,4 @@ services:
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: paperclip-db
-          property: connectionString
-
-databases:
-  - name: paperclip-db
-    plan: starter
-    databaseName: paperclip
-    user: paperclip
+        sync: false
