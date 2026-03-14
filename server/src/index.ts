@@ -704,7 +704,19 @@ export async function startServer(): Promise<StartedServer> {
           const inviteUrl = `${baseUrl}/invite/${token}`;
           logger.info(`Auto-bootstrap CEO invite created: ${inviteUrl}`);
           logger.info(`Invite expires: ${expiresAt.toISOString()}`);
-        }
+          const green = "\x1b[42m\x1b[30m";
+          const cyan = "\x1b[36m";
+          const reset = "\x1b[0m";
+          console.log(
+            [
+              "",
+              `${green}  BOOTSTRAP CEO INVITE  ${reset}`,
+              `${cyan}Open this URL to claim admin:${reset}`,
+              `${cyan}${inviteUrl}${reset}`,
+              `${cyan}Expires: ${expiresAt.toISOString()}${reset}`,
+              "",
+            ].join("\n"),
+          );        }
       }
     } catch (err) {
       logger.warn({ err }, "Auto-bootstrap CEO invite failed (non-fatal)");
