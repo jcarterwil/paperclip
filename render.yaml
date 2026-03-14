@@ -25,5 +25,7 @@ services:
         generateValue: true
       - key: PAPERCLIP_MIGRATION_AUTO_APPLY
         value: "true"
+      - key: PAPERCLIP_AUTO_BOOTSTRAP_CEO
+        value: "true"
       - key: DATABASE_URL
         value: "postgresql://hayek:rniQAsqR9hGp3h6C5GdyWhePWxj0Qud4@dpg-d5a7taruibrs73bmqrfg-a/hayek_19jf"
