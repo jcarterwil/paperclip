@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: paperclip
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    envVars:
+      - key: PORT
+        value: "3100"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: NODE_ENV
+        value: production
+      - key: SERVE_UI
+        value: "true"
+      - key: PAPERCLIP_HOME
+        value: /paperclip
+      - key: PAPERCLIP_DEPLOYMENT_MODE
+        value: authenticated
+      - key: PAPERCLIP_DEPLOYMENT_EXPOSURE
+        value: private
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      - key: PAPERCLIP_MIGRATION_AUTO_APPLY
+        value: "true"
+      - key: DATABASE_URL
+        value: "postgresql://hayek:rniQAsqR9hGp3h6C5GdyWhePWxj0Qud4@dpg-d5a7taruibrs73bmqrfg-a/hayek_19jf"
