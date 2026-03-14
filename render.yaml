@@ -22,4 +22,4 @@ services:
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: DATABASE_URL
-        sync: false
+        value: "postgresql://hayek:rniQAsqR9hGp3h6C5GdyWhePWxj0Qud4@dpg-d5a7taruibrs73bmqrfg-a/hayek_19jf"
