@@ -18,7 +18,7 @@ services:
       - key: PAPERCLIP_DEPLOYMENT_MODE
         value: authenticated
       - key: PAPERCLIP_DEPLOYMENT_EXPOSURE
-        value: private
+        value: public
       - key: PAPERCLIP_PUBLIC_URL
         value: "https://paperclip-nuqq.onrender.com"
       - key: BETTER_AUTH_SECRET
@@ -28,4 +28,4 @@ services:
       - key: PAPERCLIP_AUTO_BOOTSTRAP_CEO
         value: "true"
       - key: DATABASE_URL
-        value: "postgresql://hayek:rniQAsqR9hGp3h6C5GdyWhePWxj0Qud4@dpg-d5a7taruibrs73bmqrfg-a/hayek_19jf"
+        sync: false  # Set in Render dashboard — never commit credentials
