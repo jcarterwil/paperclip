@@ -10,7 +10,7 @@ import { accessApi } from "../api/access";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
-import { Settings, Check, Copy, Link, Download, Upload } from "lucide-react";
+import { Settings, Check, Copy, Download, Upload } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
 import {
   Field,
@@ -52,11 +52,6 @@ export function CompanySettings() {
     setLogoUrl(selectedCompany.logoUrl ?? "");
   }, [selectedCompany]);
 
-  // Human invite state
-  const [humanInviteUrl, setHumanInviteUrl] = useState<string | null>(null);
-  const [humanInviteError, setHumanInviteError] = useState<string | null>(null);
-  const [humanInviteCopied, setHumanInviteCopied] = useState(false);
-
   // OpenClaw invite state
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSnippet, setInviteSnippet] = useState<string | null>(null);
@@ -87,27 +82,6 @@ export function CompanySettings() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-    }
-  });
-
-  const humanInviteMutation = useMutation({
-    mutationFn: () =>
-      accessApi.createCompanyInvite(selectedCompanyId!, {
-        allowedJoinTypes: "human"
-      }),
-    onSuccess: (invite) => {
-      setHumanInviteError(null);
-      const base = window.location.origin.replace(/\/+$/, "");
-      const url = invite.inviteUrl?.startsWith("http")
-        ? invite.inviteUrl
-        : `${base}/invite/${invite.token}`;
-      setHumanInviteUrl(url);
-      setHumanInviteCopied(false);
-    },
-    onError: (err) => {
-      setHumanInviteError(
-        err instanceof Error ? err.message : "Failed to create invite"
-      );
     }
   });
 
@@ -222,9 +196,6 @@ export function CompanySettings() {
   }
 
   useEffect(() => {
-    setHumanInviteUrl(null);
-    setHumanInviteError(null);
-    setHumanInviteCopied(false);
     setInviteError(null);
     setInviteSnippet(null);
     setSnippetCopied(false);
@@ -493,71 +464,6 @@ export function CompanySettings() {
       <div className="space-y-4" data-testid="company-settings-invites-section">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Invites
-        </div>
-
-        {/* Human member invite */}
-        <div className="space-y-3 rounded-md border border-border px-4 py-4">
-          <div className="flex items-center gap-1.5">
-            <Link className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">
-              Invite a person to join this company as a board member.
-            </span>
-            <HintIcon text="Creates a short-lived invite link you can share. The recipient signs up and joins this company." />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              onClick={() => humanInviteMutation.mutate()}
-              disabled={humanInviteMutation.isPending}
-            >
-              {humanInviteMutation.isPending
-                ? "Generating..."
-                : "Generate Member Invite Link"}
-            </Button>
-          </div>
-          {humanInviteError && (
-            <p className="text-sm text-destructive">{humanInviteError}</p>
-          )}
-          {humanInviteUrl && (
-            <div className="rounded-md border border-border bg-muted/30 p-3">
-              <div className="text-xs text-muted-foreground mb-1.5">
-                Share this link with the person you want to invite:
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-xs outline-none"
-                  value={humanInviteUrl}
-                  readOnly
-                  onClick={(e) => (e.target as HTMLInputElement).select()}
-                />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(humanInviteUrl);
-                      setHumanInviteCopied(true);
-                      setTimeout(() => setHumanInviteCopied(false), 2000);
-                    } catch {
-                      /* clipboard may not be available */
-                    }
-                  }}
-                >
-                  {humanInviteCopied ? (
-                    <span className="flex items-center gap-1 text-green-600">
-                      <Check className="h-3 w-3" />
-                      Copied
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      <Copy className="h-3 w-3" />
-                      Copy
-                    </span>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* OpenClaw agent invite */}
